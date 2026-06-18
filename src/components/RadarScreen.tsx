@@ -11,7 +11,11 @@ interface RadarTarget {
   classification: 'commercial' | 'military' | 'hazard' | 'unknown';
 }
 
-export default function RadarScreen() {
+interface RadarScreenProps {
+  isFullscreen?: boolean;
+}
+
+export default function RadarScreen({ isFullscreen = false }: RadarScreenProps) {
   const [range, setRange] = useState<2 | 6 | 12 | 24>(12); // nautical miles
   const [selectedTarget, setSelectedTarget] = useState<RadarTarget | null>(null);
   const [targets, setTargets] = useState<RadarTarget[]>([
@@ -84,10 +88,12 @@ export default function RadarScreen() {
     setTargets(prev => [...prev, newTarget]);
   };
 
+  const radarRadius = isFullscreen ? 180 : 95;
+
   return (
-    <div className="glass-panel p-4 rounded-xl flex flex-col gap-4 h-full" id="radar-container">
+    <div className={`glass-panel p-4 rounded-xl flex flex-col ${isFullscreen ? 'lg:flex-row lg:items-stretch lg:gap-8 h-full w-full' : 'gap-4 h-full'}`} id="radar-container">
       {/* Radar Display Scope */}
-      <div className="flex-1 flex flex-col items-center justify-center relative min-h-[280px]">
+      <div className={`flex-1 flex flex-col items-center justify-center relative ${isFullscreen ? 'min-h-[420px]' : 'min-h-[280px]'}`}>
         <div className="absolute top-2 left-2 flex gap-1 z-10 w-full justify-between pr-4">
           <span className="text-[10px] uppercase tracking-wider text-cyan-400 bg-cyan-950/60 px-2 py-0.5 border border-cyan-800/50 rounded font-mono">
             Radar Overlay: Active
@@ -98,15 +104,19 @@ export default function RadarScreen() {
         </div>
 
         {/* Outer Circular frame and radial markers */}
-        <div className="relative w-64 h-64 sm:w-72 sm:h-72 lg:w-64 lg:h-64 xl:w-72 xl:h-72 rounded-full border border-cyan-500/20 bg-slate-950/90 overflow-hidden flex items-center justify-center">
+        <div className={`relative rounded-full border border-cyan-500/20 bg-slate-950/90 overflow-hidden flex items-center justify-center shadow-2xl transition-all ${
+          isFullscreen 
+            ? 'w-[320px] h-[320px] sm:w-[420px] sm:h-[420px] md:w-[460px] md:h-[460px] lg:w-[480px] lg:h-[480px]' 
+            : 'w-64 h-64 sm:w-72 sm:h-72 lg:w-64 lg:h-64 xl:w-72 xl:h-72'
+        }`}>
           {/* Compass Rose markings around perimeter */}
           <div className="absolute inset-0 border-[6px] border-marine-800/80 rounded-full pointer-events-none"></div>
           
           {/* Bearings display */}
-          <span className="absolute top-2 text-[9px] font-mono font-medium text-cyan-400/80 pointer-events-none text-glow-cyan">000° N</span>
-          <span className="absolute right-2 text-[9px] font-mono font-medium text-cyan-400/80 pointer-events-none text-glow-cyan">090° E</span>
-          <span className="absolute bottom-2 text-[9px] font-mono font-medium text-cyan-400/80 pointer-events-none text-glow-cyan">180° S</span>
-          <span className="absolute left-2 text-[9px] font-mono font-medium text-cyan-400/80 pointer-events-none text-glow-cyan">270° W</span>
+          <span className="absolute top-2 text-[9px] sm:text-xs font-mono font-medium text-cyan-400/80 pointer-events-none text-glow-cyan">000° N</span>
+          <span className="absolute right-2 text-[9px] sm:text-xs font-mono font-medium text-cyan-400/80 pointer-events-none text-glow-cyan">090° E</span>
+          <span className="absolute bottom-2 text-[9px] sm:text-xs font-mono font-medium text-cyan-400/80 pointer-events-none text-glow-cyan">180° S</span>
+          <span className="absolute left-2 text-[9px] sm:text-xs font-mono font-medium text-cyan-400/80 pointer-events-none text-glow-cyan">270° W</span>
 
           {/* Radial radar grid rings */}
           <div className="absolute w-4/5 h-4/5 rounded-full border border-cyan-500/10 pointer-events-none"></div>
@@ -127,8 +137,8 @@ export default function RadarScreen() {
           {/* Dynamic Targets plotted */}
           {targets.map(target => {
             // Check if within radar scale
-            const percentDistance = (target.distance / range) * 50; // max radius is 50%
-            if (percentDistance > 50) return null;
+            if (target.distance > range) return null;
+            const percentDistance = (target.distance / range) * radarRadius;
 
             // Cartesian coords based on bearing and radius, keeping in mind bearing 0 is straight UP
             const rad = ((target.bearing - 90) * Math.PI) / 180;
@@ -173,7 +183,7 @@ export default function RadarScreen() {
       </div>
 
       {/* Control Console / Info Bar */}
-      <div className="w-full flex flex-col justify-between border-t border-marine-700/60 pt-4">
+      <div className={`w-full flex flex-col justify-between shrink-0 ${isFullscreen ? 'lg:w-[320px] lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0 border-t border-marine-700/60 pt-4' : 'border-t border-marine-700/60 pt-4'}`}>
         <div>
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-display text-sm font-semibold text-cyan-400 flex items-center gap-1.5 uppercase">

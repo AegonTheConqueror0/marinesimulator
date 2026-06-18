@@ -342,8 +342,8 @@ export default function BridgeStation({
               ✕ Exit Fullscreen [ESC]
             </button>
           </div>
-          <div className="relative min-h-[500px] h-[75vh]">
-            <RadarScreen />
+          <div className="relative min-h-[500px]">
+            <RadarScreen isFullscreen />
           </div>
         </div>
       )}
