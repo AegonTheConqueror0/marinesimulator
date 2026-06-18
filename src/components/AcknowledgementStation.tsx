@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Heart, Users, Compass, Shield, Award, Calendar, BookOpen, Star, FileText } from 'lucide-react';
+import batch_aerith_photo from '../assets/images/batch_aerith_cohort_1781747400363.jpg';
 
 interface AcknowledgementStationProps {
   onBackToOverview: () => void;
@@ -106,7 +107,7 @@ export default function AcknowledgementStation({ onBackToOverview }: Acknowledge
             {/* The Image Container with polished frame */}
             <div className="relative border-4 border-marine-900 bg-slate-900 rounded-lg overflow-hidden group shadow-[inset_0_4px_12px_rgba(0,0,0,0.8)] aspect-[16/9]">
               <img
-                src="/src/assets/images/batch_aerith_cohort_1781747400363.jpg"
+                src={batch_aerith_photo}
                 alt="Maritime Instructors Cohort Batch Aerith"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
