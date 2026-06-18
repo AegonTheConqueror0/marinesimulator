@@ -5,6 +5,8 @@ import EngineStation from './components/EngineStation';
 import AdminStation from './components/AdminStation';
 import RemoteControlStation from './components/RemoteControlStation';
 import RoleplayScriptWidget from './components/RoleplayScriptWidget';
+import LoadingScreen from './components/LoadingScreen';
+import AcknowledgementStation from './components/AcknowledgementStation';
 import { db } from './lib/firebase';
 import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { 
@@ -23,7 +25,8 @@ import {
   CheckCircle,
   HelpCircle,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  Award
 } from 'lucide-react';
 
 // Predefined route waypoints (Norfolk to Bermuda)
@@ -146,7 +149,8 @@ function playAlarmSound(type: 'critical' | 'warn' | 'acknowledge' | 'radar_beep'
 }
 
 export default function App() {
-  const [activeStation, setActiveStation] = useState<'overview' | 'bridge' | 'engine' | 'admin' | 'remote'>('overview');
+  const [showLoading, setShowLoading] = useState(true);
+  const [activeStation, setActiveStation] = useState<'overview' | 'bridge' | 'engine' | 'admin' | 'remote' | 'acknowledgement'>('overview');
   const [trainingMode, setTrainingMode] = useState(false);
   
   // Firestore sync room state
@@ -961,6 +965,10 @@ export default function App() {
   // Derive counts for badge indicators
   const unacknowledgedAlarmsCount = activeAlarms.filter(a => !a.acknowledged).length;
 
+  if (showLoading) {
+    return <LoadingScreen onComplete={() => setShowLoading(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-marine-950 text-slate-300 font-sans selection:bg-cyan-500 selection:text-slate-900 pb-12 maritime-grid">
       
@@ -1014,6 +1022,7 @@ export default function App() {
                     {activeStation === 'engine' && '⚙️ Marine Engineer'}
                     {activeStation === 'admin' && '📋 Ship Administrator'}
                     {activeStation === 'remote' && '🎛️ Simulation Live Remote'}
+                    {activeStation === 'acknowledgement' && '🎖️ IMO 6.09 Register'}
                   </span>
                 </div>
                 
@@ -1030,6 +1039,20 @@ export default function App() {
 
           {/* Quick Stats Badges & Training Switch */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Acknowledgement trigger button */}
+            <button
+              id="btn-goto-acknowledgement"
+              onClick={() => setActiveStation(activeStation === 'acknowledgement' ? 'overview' : 'acknowledgement')}
+              className={`text-xs font-mono font-bold px-3 py-2 rounded-lg border flex items-center gap-1.5 transition-all duration-300 cursor-pointer ${
+                activeStation === 'acknowledgement'
+                  ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/65 shadow-[0_0_12px_rgba(99,102,241,0.25)]' 
+                  : 'bg-marine-900 text-slate-400 border-marine-800 hover:text-indigo-300 hover:border-indigo-950'
+              }`}
+            >
+              <Award className={`w-4 h-4 ${activeStation === 'acknowledgement' ? 'text-indigo-400 animate-pulse' : 'text-slate-500'}`} />
+              ACKNOWLEDGEMENT
+            </button>
+
             {/* Highly Prominent Cadet Training Mode Switch */}
             <button
               id="btn-toggle-training-mode"
@@ -1643,6 +1666,12 @@ export default function App() {
               cargoItems={cargoItems}
               onAddCargo={handleAddCargoGlobal}
               onRemoveCargo={handleRemoveCargoGlobal}
+            />
+          )}
+
+          {activeStation === 'acknowledgement' && (
+            <AcknowledgementStation
+              onBackToOverview={() => setActiveStation('overview')}
             />
           )}
 
